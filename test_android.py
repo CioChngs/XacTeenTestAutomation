@@ -11,8 +11,8 @@ from openpyxl import load_workbook
 from selenium.common.exceptions import NoSuchElementException
 
 APP_PACKAGE = "mn.xacbank.teen"
-APK_PATH = r"C:\Users\5741\Downloads\xac-teen-uat.apk"
-EXCEL_PATH = r"C:\Users\5741\Desktop\REPO\Mobile%20Automation\credentials.xlsx"
+APK_PATH = r"C:\Users\5741\Downloads\xac-android-uat.apk"
+EXCEL_PATH = r"C:\Users\5741\Desktop\XacTeenUAT\credentials-uat.xlsx"
 
 qr_icon = chr(0xf433)
 icon = chr(0xF002)
@@ -51,6 +51,16 @@ def sheet():
 @pytest.fixture
 def platform():
     return "Android"
+
+def navigate_to_home(driver):
+    try:
+        for _ in range(3):
+            driver.back()
+
+        home_btn = driver.find_element(AppiumBy.ID, "mn.xacbank.teen:id/home_button")
+        home_btn.click()
+    except NoSuchElementException:
+        print("Home button not found; used back button to return to Home.")
 
 def is_logged_in(driver):
     home_texts = [
@@ -210,6 +220,8 @@ def bankin_transaction(driver, acc, pin, amount):
         if not enter_pin(driver, pin):
             return "PIN entry failed"
 
+
+
         wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Амжилттай")'
         )))
@@ -224,6 +236,9 @@ def bankin_transaction(driver, acc, pin, amount):
     except Exception as e:
         print("[bankin_transaction] Error during transaction:", e)
         return "Failed"
+
+
+
 
 def bankout_transaction(driver, bank, account, pin, ic, amount):
     wait = WebDriverWait(driver, 5)
@@ -276,6 +291,7 @@ def bankout_transaction(driver, bank, account, pin, ic, amount):
         if not enter_pin(driver, pin):
             return "PIN entry failed"
 
+
         wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Амжилттай")')))
         print("Transfer successful!")
@@ -320,6 +336,7 @@ def qr_transaction(driver, pin, amount):
 
         if not enter_pin(driver, pin):
             return "PIN entry failed"
+
 
         wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Амжилттай")')))
@@ -378,6 +395,7 @@ def pn_transaction(driver, pnum, pin, ic, amount):
         if not enter_pin(driver, pin):
             return "PIN entry failed"
 
+
         wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Амжилттай")')))
         print("Transfer successful!")
@@ -390,6 +408,7 @@ def pn_transaction(driver, pnum, pin, ic, amount):
     except Exception:
         result = False
     return result
+
 
 def card_t(driver, pin):
     try:
@@ -425,6 +444,7 @@ def card_t(driver, pin):
 
         print('Clicked "Мэдээлэл харах"')
 
+
         if not enter_pin(driver, pin):
             return "PIN entry failed"
 
@@ -444,6 +464,7 @@ def card_t(driver, pin):
 
         print('Clicked "Картын пин авах"')
 
+
         wait.until(EC.element_to_be_clickable((
             AppiumBy.XPATH,
             '//android.widget.TextView[@text="Тийм"]'
@@ -453,6 +474,7 @@ def card_t(driver, pin):
 
         if not enter_pin(driver, pin):
             return "PIN entry failed"
+
 
         print("Entered PIN")
 
@@ -516,6 +538,7 @@ def go_to_settings(driver):
     except Exception:
         return False
 
+
 def set_nickname(driver, new_nickname):
     wait = WebDriverWait(driver, 5)
 
@@ -542,6 +565,7 @@ def set_nickname(driver, new_nickname):
     except Exception as e:
         print(f"[set_nickname] Error: {e}")
         return False
+
 
 def change_profile(driver):
     wait = WebDriverWait(driver, 5)
@@ -613,7 +637,7 @@ def friends_circle(driver):
 
         wait.until(EC.element_to_be_clickable((
             AppiumBy.ANDROID_UIAUTOMATOR,
-            'new UiSelector().className("android.view.ViewGroup").instance(45)'
+            'new UiSelector().className("android.view.ViewGroup").instance(49)'
         ))).click()
         time.sleep(0.5)
 
@@ -651,15 +675,18 @@ def friends_circle(driver):
         print(f"Failed to open Friends Circle: {e}")
         return False
 
+
 def theme_t(driver):
     wait = WebDriverWait(driver, 20)
     state = False
 
+    # Step 1: Open the theme picker
     if not open_theme_picker(driver):
         print("Failed to open theme picker.")
         return state
     print("Opened theme picker.")
 
+    # Step 2: Click "Зураг оруулах"
     try:
         wait.until(EC.element_to_be_clickable((
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -670,16 +697,18 @@ def theme_t(driver):
         print(f"Failed to click 'Зураг оруулах': {e}")
         return state
 
+    # Step 3: Click thumbnail image
     try:
         wait.until(EC.element_to_be_clickable((
             AppiumBy.ANDROID_UIAUTOMATOR,
-            'new UiSelector().className("android.view.View").instance(14)'
+            'new UiSelector().resourceId("com.google.android.providers.media.module:id/icon_thumbnail").instance(0)'
         ))).click()
         print("Clicked image thumbnail")
     except Exception as e:
         print(f"Failed to click image thumbnail: {e}")
         return state
 
+    # Step 4: Click crop button
     try:
         wait.until(EC.element_to_be_clickable((
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -692,6 +721,7 @@ def theme_t(driver):
 
     time.sleep(15)
 
+    # Step 5: Scroll to and click "Theme солих"
     try:
         element = wait.until(EC.presence_of_element_located((
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -703,6 +733,8 @@ def theme_t(driver):
         print(f"Failed to scroll/click 'Theme солих': {e}")
         return state
 
+
+    # Step 6: Select built-in theme and confirm
     try:
         wait.until(EC.element_to_be_clickable((
             AppiumBy.ANDROID_UIAUTOMATOR,
@@ -723,6 +755,8 @@ def theme_t(driver):
         state = False
 
     return state
+
+
 
 def test_main(driver, sheet, platform):
     wait = WebDriverWait(driver, 3)
@@ -818,67 +852,68 @@ def test_main(driver, sheet, platform):
            sheet.cell(row=row, column=14).value = "QR transfer failed"
         time.sleep(0.3)
 
-        # #Card Test
-        # card_result = card_t(driver, pin)
-        # if card_result:
-        #     sheet.cell(row=row, column=21).value = "Card passed"
-        # else:
-        #     sheet.cell(row=row, column=21).value = "Card failed"
+        #Card Test
+        card_result = card_t(driver, pin)
+        if card_result:
+            sheet.cell(row=row, column=21).value = "Card passed"
+        else:
+            sheet.cell(row=row, column=21).value = "Card failed"
 
-        # back_btn = wait.until(EC.presence_of_element_located((
-        #     AppiumBy.XPATH, '//android.view.ViewGroup[@content-desc="BUTTON_NAVIGATION_BACK"]'
-        # )))
-        # back_btn.click()
+        back_btn = wait.until(EC.presence_of_element_located((
+            AppiumBy.XPATH, '//android.view.ViewGroup[@content-desc="BUTTON_NAVIGATION_BACK"]'
+        )))
+        back_btn.click()
 
-        # print('Clicked "Back"')
-        # time.sleep(5)
 
-        # back_btn = wait.until(EC.presence_of_element_located((
-        #     AppiumBy.XPATH, '//android.view.ViewGroup[@content-desc="BUTTON_NAVIGATION_BACK"]'
-        # )))
-        # back_btn.click()
+        print('Clicked "Back"')
 
-        # print('Clicked "Back"')
-        # time.sleep(5)
+        time.sleep(5)
 
-        # # Friend Test
-        # if friends_circle(driver):
-        #     sheet.cell(row=row, column=22).value = "Friends circle passed"
-        # else:
-        #     sheet.cell(row=row, column=22).value = "Friends circle failed"
+        back_btn = wait.until(EC.presence_of_element_located((
+            AppiumBy.XPATH, '//android.view.ViewGroup[@content-desc="BUTTON_NAVIGATION_BACK"]'
+        )))
+        back_btn.click()
 
-        # # QR Test
-        # if qr_t(driver):
-        #     sheet.cell(row=row, column=15).value = "QR passed"
-        # else:
-        #     sheet.cell(row=row, column=15).value = "QR failed"
+        print('Clicked "Back"')
 
-        # qr_back = wait.until(EC.element_to_be_clickable((
-        #     AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().description("BUTTON_NAVIGATION_BACK")'
-        # )))
-        # qr_back.click()
+        # Friend Test
+        if friends_circle(driver):
+            sheet.cell(row=row, column=22).value = "Friends circle passed"
+        else:
+            sheet.cell(row=row, column=22).value = "Friends circle failed"
 
-        # # Theme Test
-        # if theme_t(driver):
-        #     sheet.cell(row=row, column=16).value = "Theme passed"
-        # else:
-        #     sheet.cell(row=row, column=16).value = "Theme failed"
-        # time.sleep(1)
+        # QR Test
+        if qr_t(driver):
+            sheet.cell(row=row, column=15).value = "QR passed"
+        else:
+            sheet.cell(row=row, column=15).value = "QR failed"
 
-        # # Nickname Test
-        # go_to_settings(driver)
-        # if set_nickname(driver, nickname):
-        #     sheet.cell(row=row, column=17).value = "Nickname passed"
-        # else:
-        #     sheet.cell(row=row, column=17).value = "Nickname failed"
-        # time.sleep(1)
+        qr_back = wait.until(EC.element_to_be_clickable((
+            AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().description("BUTTON_NAVIGATION_BACK")'
+        )))
+        qr_back.click()
 
-        # # Change Profile Test
-        # go_to_settings(driver)
-        # if change_profile(driver):
-        #     sheet.cell(row=row, column=18).value = "Profile passed"
-        # else:
-        #     sheet.cell(row=row, column=18).value = "Profile failed"
+        # Theme Test
+        if theme_t(driver):
+            sheet.cell(row=row, column=16).value = "Theme passed"
+        else:
+            sheet.cell(row=row, column=16).value = "Theme failed"
+        time.sleep(1)
+
+        # Nickname Test
+        go_to_settings(driver)
+        if set_nickname(driver, nickname):
+            sheet.cell(row=row, column=17).value = "Nickname passed"
+        else:
+            sheet.cell(row=row, column=17).value = "Nickname failed"
+        time.sleep(1)
+
+        # Change Profile Test
+        go_to_settings(driver)
+        if change_profile(driver):
+            sheet.cell(row=row, column=18).value = "Profile passed"
+        else:
+            sheet.cell(row=row, column=18).value = "Profile failed"
 
         # Platform-specific result
         if platform == "Android":
